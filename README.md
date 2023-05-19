@@ -1,2 +1,4 @@
 # Simple shell Project
-A Group Project
+An ALX Group Project
+# Introduction
+A simple UNIX command interpreter.
