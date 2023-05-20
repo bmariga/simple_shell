@@ -1,65 +1,149 @@
-#include "main.h"
+#include "shell.h"
 
-char *get_location(char *command){
-    char *path, *path_copy, *path_token, *file_path;
-    int command_length, directory_length;
-    struct stat buffer;
-    
-    path = getenv("PATH");
+/**
+ * _getenv - gets the value of the global variable
+ * @name: name of the global variable
+ * Return: string of value
+ */
+char *_getenv(const char *name)
+{
+	int i = 0, j = 0; /* declared variables */
+	char *value = NULL;
 
-    if (path){
-        /* Duplicate the path string -> remember to free up memory for this because strdup allocates memory that needs to be freed*/ 
-        path_copy = strdup(path);
-        /* Get length of the command that was passed */
-        command_length = strlen(command);
+	if (!name)
+		return (NULL);
+	for (i = 0; environ[i]; i++) /* loop through the environment variable */
+	{
+		if (name[j] == environ[i][j]) /* check the first digit */
+		{
+			while (name[j])
+			{
+				if (name[j] != environ[i][j]) /* if the digits are different */
+					break;
 
+				j++;
+			}
+			if (name[j] == '\0') /* if the digits are equals */
+			{
+				value = (environ[i] + j + 1);
+				return (value);
+			}
+		}
+	}
+	return (0);
+}
 
-        /* Let's break down the path variable and get all the directories available*/
-        path_token = strtok(path_copy, ":");
+/**
+ * add_node_end - adds a new node at the end of a list_t list
+ * @head: pointer to pointer to our linked list
+ * @str: pointer to string in previous first node
+ * Return: address of the new element/node
+ */
 
-        while(path_token != NULL){
-            /* Get the length of the directory*/
-            directory_length = strlen(path_token);
-            /* allocate memory for storing the command name together with the directory name */
-            file_path = malloc(command_length + directory_length + 2); /* NB: we added 2 for the slash and null character we will introduce in the full command */
-            /* to build the path for the command, let's copy the directory path and concatenate the command to it */
-            strcpy(file_path, path_token);
-            strcat(file_path, "/");
-            strcat(file_path, command);
-            strcat(file_path, "\0");
+list_path *add_node_end(list_path **head, char *str)
+{
+	list_path *tmp = NULL;
+	list_path *new = NULL;
 
-            /* let's test if this file path actually exists and return it if it does, otherwise try the next directory */
-            if (stat(file_path, &buffer) == 0){
-                /* return value of 0 means success implying that the file_path is valid*/
+	new = _calloc((sizeof(list_path)), 1);
 
-                /* free up allocated memory before returning your file_path */
-                free(path_copy);
+	if (!new || !str)
+	{
+		return (NULL);
+	}
 
-                return (file_path);
-            }
-            else{
-                /* free up the file_path memory so we can check for another path*/
-                free(file_path);
-                path_token = strtok(NULL, ":");
+	new->dir = str;
 
-            }
-        
-        }
+	new->p = '\0';
+	if (!*head)
+	{
+		*head = new;
+	}
+	else
+	{
+		tmp = *head;
 
-        /* if we don't get any file_path that exists for the command, we return NULL but we need to free up memory for path_copy */ 
-        free(path_copy);
+		while (tmp->p)
+		{
 
-        /* before we exit without luck, let's see if the command itself is a file_path that exists */
-        if (stat(command, &buffer) == 0)
-        {
-            return (command);
-        }
+			tmp = tmp->p;
+		}
 
+		tmp->p = new;
+	}
 
-        return (NULL);
-    
-    }
+	return (*head);
+}
 
+/**
+ * linkpath - creates a linked list for path directories
+ * @path: string of path value
+ * Return: pointer to the created linked list
+ */
+list_path *linkpath(char *path)
+{
+	list_path *head = '\0'; /* declared variables */
+	char *token = NULL;
+	char *cpath = _strdup(path); /* copy the path */
 
-    return (NULL);
+	token = strtok(cpath, ":"); /* divide the path in tokens */
+	while (token)
+	{
+		head = add_node_end(&head, token); /* assign the path */
+		token = strtok(NULL, ":"); /* next token */
+	}
+	return (head);
+}
+
+/**
+ * _which - finds the pathname of a filename
+ * @filename: name of file or command
+ * @head: head of linked list of path directories
+ * Return: pathname of filename or NULL if no match
+ */
+char *_which(char *filename, list_path *head)
+{
+	/* declared variables */
+	struct stat st;
+	char *string = NULL;
+
+	list_path *tmp = head; /* create a copy of head */
+
+	while (tmp) /* loop through list of paths */
+	{
+
+		string = concat_all(tmp->dir, "/", filename); /* possible executables */
+		if (stat(string, &st) == 0)
+		/* The stat() function shall continue pathname */
+		/* resolution using the contents of string, and shall return */
+		/* information pertaining to the resulting file if the file exists */
+		{
+			return (string);
+		}
+		free(string);
+		tmp = tmp->p; /* next node */
+	}
+
+	return (NULL);
+}
+
+/**
+ * free_list -  function that frees a linked list.
+ * @head: the head of the linked lint
+ * Return: nothing
+ */
+void free_list(list_path *head)
+{
+	list_path *actual;
+
+	if (!head)
+		return;
+
+	while (head->p)
+	{
+		actual = head->p;
+		free(head);
+		head = actual;
+	}
+	free(head);
 }
