@@ -1,7 +1,7 @@
 #include "shell.h"
 
 /**
- * error_print - prints error messages to standard error
+ * print_error - prints error messages to standard error
  * @vars: pointer to struct of variables
  * @msg: message to print
  *
@@ -36,9 +36,9 @@ void _puts2(char *str)
 {
 	ssize_t num, len;
 
-	number = _strlen(str);
-	len = write(STDERR_FILENO, str, number);
-	if (len != number)
+	num = _strlen(str);
+	len = write(STDERR_FILENO, str, num);
+	if (len != num)
 	{
 		perror("Fatal Error");
 		exit(1);
