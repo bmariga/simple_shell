@@ -1,68 +1,81 @@
-#ifndef SHELL_H
-#define SHELL_H
+#ifndef _SHELL_H_
+#define _SHELL_H_
 
-/**
- * Libraries
- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <sys/wait.h>
 #include <sys/types.h>
-#include <errno.h>
-#include <stddef.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
+#include <limits.h>
 #include <signal.h>
 
 /**
- * The global variable environment
+ * struct variables - variables
+ * @av: command line arguments
+ * @buffer: buffer of command
+ * @env: environment variables
+ * @count: count of commands entered
+ * @argv: arguments at opening of shell
+ * @status: exit status
+ * @commands: commands to execute
  */
-extern char **environ;
-
-/**
- * struct list_path - Linked list containing PATH directories
- * @dir: directory in path
- * @p: pointer to next node
- */
-typedef struct list_path
+typedef struct variables
 {
-	char *dir;
-	struct list_path *p;
-} list_path;
+	char **av;
+	char *buffer;
+	char **env;
+	size_t count;
+	char **argv;
+	int status;
+	char **commands;
+} vars_t;
 
 /**
- * struct mybuild - pointer to function with corresponding buildin command
- * @name: buildin command
- * @func: execute the buildin command
+ * struct builtins - struct for the builtin functions
+ * @name: name of builtin command
+ * @f: function for corresponding builtin
  */
-typedef struct mybuild
+typedef struct builtins
 {
 	char *name;
-	void (*func)(char **);
-} mybuild;
+	void (*f)(vars_t *);
+} builtins_t;
 
-/**
- * Functions
- */
-void sig_handler(int sig_num);
-int _strlen(char *s);
-void _puts(char *str);
-int _putchar(char c);
-void _EOF(int len, char *buff);
-void _isatty(void);
-char **splitstring(char *str, const char *delim);
-void execute(char **argv);
-char *_getenv(const char *name);
-char *_strdup(char *str);
-char *concat_all(char *name, char *sep, char *value);
-void(*checkbuild(char **arv))(char **arv);
-list_path *linkpath(char *path);
-list_path *add_node_end(list_path **head, char *str);
-char *_which(char *filename, list_path *head);
-void free_list(list_path *head);
-void freearv(char **arv);
-void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
-void *_calloc(unsigned int nmemb, unsigned int size);
+void free_env(char **env);
+char **make_env(char **env);
 
-#endif
+ssize_t _puts(char *str);
+char *_strcat(char *strc1, char *strc2);
+char *_strdup(char *strtodup);
+int _strcmpr(char *strcmp1, char *strcmp2);
+unsigned int _strlen(char *str);
+
+void (*check_for_builtins(vars_t *vars))(vars_t *vars);
+void new_exit(vars_t *vars);
+void _env(vars_t *vars);
+void new_setenv(vars_t *vars);
+void new_unsetenv(vars_t *vars);
+
+char **tokenize(char *buffer, char *delimiter);
+char **_realloc(char **ptr, size_t *size);
+char *new_strtok(char *str, const char *delim);
+
+void add_key(vars_t *vars);
+char **find_key(char **env, char *key);
+char *add_value(char *key, char *value);
+int _atoi(char *str);
+
+void check_for_path(vars_t *vars);
+int execute_cwd(vars_t *vars);
+int check_for_dir(char *str);
+int path_execute(char *command, vars_t *vars);
+char *find_path(char **env);
+
+char *_uitoa(unsigned int count);
+void print_error(vars_t *vars, char *msg);
+void _puts2(char *str);
+
+#endif /* _SHELL_H_ */
+
