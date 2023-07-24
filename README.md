@@ -11,3 +11,4 @@ An ALX Group Project
 HSH, A simple UNIX command interpreter that reads commands and executes them and prints an output.
 >>>>>>> 847f4ae8a893fb5d407339d9a9e5c7926d71338e
 # sorting_algorithms
+# sorting_algorithms
