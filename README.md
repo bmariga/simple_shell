@@ -1,4 +1,5 @@
 # Simple shell Project
 An ALX Group Project
+
 # Introduction
-HSH, A simple UNIX command interpreter that reads commands and executes them and prints an output.
+A simple UNIX command interpreter that reads commands and executes them and prints an output.
